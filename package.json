@@ -5,13 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run"
   },
   "dependencies": {
+    "@mapbox/vector-tile": "^3.0.0",
     "leaflet": "^1.9.4",
     "mapillary-js": "^4.1.2",
+    "pbf": "^4.0.2",
     "pinia": "^2.2.6",
     "vue": "^3.5.13"
   },

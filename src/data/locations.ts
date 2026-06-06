@@ -1,42 +1,42 @@
 /**
- * Curated bounding boxes over cities with dense Mapillary coverage.
- * Each round picks one at random, then queries Mapillary for a panorama inside it.
- *
- * A bbox is [minLng, minLat, maxLng, maxLat]. Boxes are kept fairly tight around
- * city centres so results are recognizable rather than empty rural roads.
+ * Curated centre points over cities with dense Mapillary coverage.
+ * Each round picks one at random; the service fetches the Mapillary coverage
+ * vector tile (zoom 14) covering that point and selects a random panorama
+ * inside it. Points are city centres so results are recognizable.
  */
-export interface BBox {
+export interface Place {
   name: string
-  bbox: [number, number, number, number]
+  lat: number
+  lng: number
 }
 
-export const LOCATIONS: BBox[] = [
-  { name: 'New York, USA', bbox: [-74.02, 40.7, -73.95, 40.78] },
-  { name: 'San Francisco, USA', bbox: [-122.45, 37.74, -122.39, 37.8] },
-  { name: 'Chicago, USA', bbox: [-87.68, 41.86, -87.6, 41.92] },
-  { name: 'Toronto, Canada', bbox: [-79.41, 43.63, -79.36, 43.68] },
-  { name: 'Mexico City, Mexico', bbox: [-99.18, 19.41, -99.12, 19.45] },
-  { name: 'London, UK', bbox: [-0.16, 51.49, -0.07, 51.53] },
-  { name: 'Paris, France', bbox: [2.31, 48.84, 2.37, 48.88] },
-  { name: 'Amsterdam, Netherlands', bbox: [4.87, 52.35, 4.92, 52.38] },
-  { name: 'Berlin, Germany', bbox: [13.36, 52.5, 13.43, 52.53] },
-  { name: 'Madrid, Spain', bbox: [-3.72, 40.4, -3.66, 40.43] },
-  { name: 'Rome, Italy', bbox: [12.46, 41.88, 12.52, 41.91] },
-  { name: 'Lisbon, Portugal', bbox: [-9.16, 38.7, -9.12, 38.73] },
-  { name: 'Stockholm, Sweden', bbox: [18.04, 59.31, 18.1, 59.34] },
-  { name: 'Helsinki, Finland', bbox: [24.92, 60.16, 24.97, 60.18] },
-  { name: 'Vienna, Austria', bbox: [16.35, 48.19, 16.39, 48.22] },
-  { name: 'Prague, Czechia', bbox: [14.4, 50.07, 14.45, 50.1] },
-  { name: 'Athens, Greece', bbox: [23.71, 37.96, 23.75, 37.99] },
-  { name: 'Istanbul, Turkey', bbox: [28.96, 41.0, 29.02, 41.04] },
-  { name: 'Tokyo, Japan', bbox: [139.69, 35.66, 139.74, 35.7] },
-  { name: 'Singapore', bbox: [103.83, 1.28, 103.87, 1.31] },
-  { name: 'Bangkok, Thailand', bbox: [100.49, 13.72, 100.54, 13.76] },
-  { name: 'Sydney, Australia', bbox: [151.19, -33.88, 151.23, -33.85] },
-  { name: 'Melbourne, Australia', bbox: [144.95, -37.82, 144.99, -37.8] },
-  { name: 'Auckland, New Zealand', bbox: [174.74, -36.86, 174.78, -36.84] },
-  { name: 'Cape Town, South Africa', bbox: [18.4, -33.93, 18.45, -33.9] },
-  { name: 'Buenos Aires, Argentina', bbox: [-58.42, -34.62, -58.37, -34.58] },
-  { name: 'São Paulo, Brazil', bbox: [-46.66, -23.57, -46.62, -23.54] },
-  { name: 'Rio de Janeiro, Brazil', bbox: [-43.21, -22.92, -43.16, -22.89] },
+export const LOCATIONS: Place[] = [
+  { name: 'New York, USA', lat: 40.7411, lng: -73.9897 },
+  { name: 'San Francisco, USA', lat: 37.7793, lng: -122.4192 },
+  { name: 'Chicago, USA', lat: 41.8819, lng: -87.6278 },
+  { name: 'Toronto, Canada', lat: 43.6532, lng: -79.3832 },
+  { name: 'Mexico City, Mexico', lat: 19.4326, lng: -99.1332 },
+  { name: 'London, UK', lat: 51.5074, lng: -0.1278 },
+  { name: 'Paris, France', lat: 48.8566, lng: 2.3522 },
+  { name: 'Amsterdam, Netherlands', lat: 52.3702, lng: 4.8952 },
+  { name: 'Berlin, Germany', lat: 52.52, lng: 13.405 },
+  { name: 'Madrid, Spain', lat: 40.4168, lng: -3.7038 },
+  { name: 'Rome, Italy', lat: 41.9028, lng: 12.4964 },
+  { name: 'Lisbon, Portugal', lat: 38.7223, lng: -9.1393 },
+  { name: 'Stockholm, Sweden', lat: 59.3293, lng: 18.0686 },
+  { name: 'Helsinki, Finland', lat: 60.1699, lng: 24.9384 },
+  { name: 'Vienna, Austria', lat: 48.2082, lng: 16.3738 },
+  { name: 'Prague, Czechia', lat: 50.0755, lng: 14.4378 },
+  { name: 'Athens, Greece', lat: 37.9838, lng: 23.7275 },
+  { name: 'Istanbul, Turkey', lat: 41.0082, lng: 28.9784 },
+  { name: 'Tokyo, Japan', lat: 35.6762, lng: 139.6503 },
+  { name: 'Singapore', lat: 1.3521, lng: 103.8198 },
+  { name: 'Bangkok, Thailand', lat: 13.7563, lng: 100.5018 },
+  { name: 'Sydney, Australia', lat: -33.8688, lng: 151.2093 },
+  { name: 'Melbourne, Australia', lat: -37.8136, lng: 144.9631 },
+  { name: 'Auckland, New Zealand', lat: -36.8485, lng: 174.7633 },
+  { name: 'Cape Town, South Africa', lat: -33.9249, lng: 18.4241 },
+  { name: 'Buenos Aires, Argentina', lat: -34.6037, lng: -58.3816 },
+  { name: 'São Paulo, Brazil', lat: -23.5505, lng: -46.6333 },
+  { name: 'Rio de Janeiro, Brazil', lat: -22.9068, lng: -43.1729 },
 ]
