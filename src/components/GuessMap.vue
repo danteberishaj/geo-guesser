@@ -7,11 +7,16 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import type { LatLng } from '../types/game'
 import { addBaseTiles } from '../utils/mapTiles'
 
-// Fix Leaflet's default marker icon paths under a bundler.
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
+// Explicit icon built from the bundled assets. Using L.icon (rather than
+// patching L.Icon.Default) avoids Leaflet's imagePath auto-detection, which
+// otherwise prepends a path and produces a broken doubled URL under Vite.
+const pinIcon = L.icon({
   iconUrl: markerIcon,
+  iconRetinaUrl: markerIcon2x,
   shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  shadowSize: [41, 41],
 })
 
 const emit = defineEmits<{ guess: [value: LatLng] }>()
@@ -37,7 +42,7 @@ onMounted(() => {
   map.on('click', (e: L.LeafletMouseEvent) => {
     guess.value = { lat: e.latlng.lat, lng: e.latlng.lng }
     if (marker) marker.setLatLng(e.latlng)
-    else marker = L.marker(e.latlng).addTo(map!)
+    else marker = L.marker(e.latlng, { icon: pinIcon }).addTo(map!)
   })
 
   // Keep Leaflet's internal size in sync once the expand/collapse transition ends.
