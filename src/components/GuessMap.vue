@@ -5,6 +5,7 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import type { LatLng } from '../types/game'
+import { addBaseTiles } from '../utils/mapTiles'
 
 // Fix Leaflet's default marker icon paths under a bundler.
 L.Icon.Default.mergeOptions({
@@ -31,10 +32,7 @@ onMounted(() => {
     zoomControl: true,
     attributionControl: true,
   }).setView([20, 0], 1)
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap',
-  }).addTo(map)
+  addBaseTiles(map)
 
   map.on('click', (e: L.LeafletMouseEvent) => {
     guess.value = { lat: e.latlng.lat, lng: e.latlng.lng }
@@ -44,12 +42,18 @@ onMounted(() => {
 
   // Keep Leaflet's internal size in sync once the expand/collapse transition ends.
   dockEl.value?.addEventListener('transitionend', () => map?.invalidateSize())
+  window.addEventListener('keydown', onKey)
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKey)
   map?.remove()
   map = null
 })
+
+function onKey(e: KeyboardEvent) {
+  if (e.key === 'Enter') submit()
+}
 
 function setExpanded(value: boolean) {
   if (expanded.value === value) return
