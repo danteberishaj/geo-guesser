@@ -15,8 +15,10 @@ L.Icon.Default.mergeOptions({
 
 const emit = defineEmits<{ guess: [value: LatLng] }>()
 
+const dockEl = ref<HTMLDivElement | null>(null)
 const mapEl = ref<HTMLDivElement | null>(null)
 const expanded = ref(false)
+const pinned = ref(false)
 const guess = ref<LatLng | null>(null)
 
 let map: L.Map | null = null
@@ -24,24 +26,24 @@ let marker: L.Marker | null = null
 
 onMounted(() => {
   if (!mapEl.value) return
-  map = L.map(mapEl.value, { worldCopyJump: true, attributionControl: true }).setView(
-    [20, 0],
-    1,
-  )
+  map = L.map(mapEl.value, {
+    worldCopyJump: true,
+    zoomControl: true,
+    attributionControl: true,
+  }).setView([20, 0], 1)
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap',
   }).addTo(map)
 
   map.on('click', (e: L.LeafletMouseEvent) => {
-    const value = { lat: e.latlng.lat, lng: e.latlng.lng }
-    guess.value = value
-    if (marker) {
-      marker.setLatLng(e.latlng)
-    } else {
-      marker = L.marker(e.latlng).addTo(map!)
-    }
+    guess.value = { lat: e.latlng.lat, lng: e.latlng.lng }
+    if (marker) marker.setLatLng(e.latlng)
+    else marker = L.marker(e.latlng).addTo(map!)
   })
+
+  // Keep Leaflet's internal size in sync once the expand/collapse transition ends.
+  dockEl.value?.addEventListener('transitionend', () => map?.invalidateSize())
 })
 
 onBeforeUnmount(() => {
@@ -49,10 +51,23 @@ onBeforeUnmount(() => {
   map = null
 })
 
-function toggle() {
-  expanded.value = !expanded.value
-  // Leaflet must recompute its size after the container resizes.
+function setExpanded(value: boolean) {
+  if (expanded.value === value) return
+  expanded.value = value
+  // Invalidate a few times across the transition so tiles fill smoothly.
   requestAnimationFrame(() => map?.invalidateSize())
+  setTimeout(() => map?.invalidateSize(), 220)
+}
+
+function onEnter() {
+  setExpanded(true)
+}
+function onLeave() {
+  if (!pinned.value) setExpanded(false)
+}
+function togglePin() {
+  pinned.value = !pinned.value
+  setExpanded(pinned.value || expanded.value)
 }
 
 function submit() {
@@ -61,11 +76,24 @@ function submit() {
 </script>
 
 <template>
-  <div class="guess-dock" :class="{ expanded }">
-    <button class="toggle secondary" type="button" @click="toggle">
-      {{ expanded ? 'Shrink' : 'Expand' }} map
-    </button>
-    <div ref="mapEl" class="guess-map" />
+  <div
+    ref="dockEl"
+    class="guess-dock"
+    :class="{ expanded }"
+    @mouseenter="onEnter"
+    @mouseleave="onLeave"
+  >
+    <div class="map-wrap">
+      <div ref="mapEl" class="guess-map" />
+      <button
+        class="pin"
+        type="button"
+        :title="pinned ? 'Unpin map' : 'Pin map open'"
+        @click="togglePin"
+      >
+        {{ pinned ? '📌' : '📍' }}
+      </button>
+    </div>
     <button class="guess-btn" type="button" :disabled="!guess" @click="submit">
       {{ guess ? 'Make guess' : 'Click the map to guess' }}
     </button>
@@ -80,31 +108,53 @@ function submit() {
   z-index: 600;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  width: 320px;
+  width: 270px;
+  height: 212px;
+  /* Never taller than the play area (minus breathing room), so it can't slip
+     under the HUD or push the guess button off-screen on short viewports. */
+  max-height: calc(100% - 24px);
   background: var(--panel);
   padding: 6px;
   border-radius: 10px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-  transition: width 0.18s ease;
+  transition: width 0.18s ease, height 0.18s ease;
 }
 .guess-dock.expanded {
-  width: min(60vw, 720px);
+  width: min(62vw, 740px);
+  height: min(56vh, 460px);
+}
+
+.map-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0; /* allow the map to shrink within the flex column */
 }
 .guess-map {
-  height: 200px;
+  height: 100%;
   border-radius: 6px;
-  transition: height 0.18s ease;
 }
-.guess-dock.expanded .guess-map {
-  height: min(60vh, 520px);
+
+.pin {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 500; /* above the Leaflet pane */
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-size: 0.95rem;
+  line-height: 1;
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
-.toggle {
-  padding: 0.35rem 0.6rem;
-  font-size: 0.85rem;
-  align-self: flex-end;
+.pin:hover:not(:disabled) {
+  background: var(--panel-2);
 }
+
 .guess-btn {
   width: 100%;
+  margin-top: 6px;
 }
 </style>
